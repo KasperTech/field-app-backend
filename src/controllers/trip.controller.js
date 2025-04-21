@@ -22,15 +22,15 @@ exports.startFieldTrip = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Location is required!");
   }
 
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req?.user?._id);
   if (!user) {
     throw new ApiError(400, "Invalid user");
   }
 
   const trip = await new Trip({
-    userId: req.user._id,
+    userId: req?.user?._id,
     startTime: new Date(),
-    locations: [{ latitude, longitude }],
+    locations: [{ latitude, longitude, time: new Date() }],
   }).save();
 
   if (!trip) {
@@ -47,7 +47,7 @@ exports.startFieldTrip = asyncHandler(async (req, res) => {
  * @route [
  *  /api/v1/field-user/trip/:tripId/end
  * ]
- * @method POST
+ * @method PUT
  * @contentType application/json
  * @authentication true
  * @authorization false
@@ -61,7 +61,7 @@ exports.endFieldTrip = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Location is required!");
   }
 
-  const user = await User.findById(req.user._id);
+  const user = await User.findById(req?.user?._id);
   if (!user) {
     throw new ApiError(400, "Invalid user");
   }
@@ -77,10 +77,49 @@ exports.endFieldTrip = asyncHandler(async (req, res) => {
   }
 
   trip.endTime = new Date();
-  trip.locations.push({ latitude, longitude });
+  trip.locations.push({ latitude, longitude, time: new Date() });
   await trip.save();
 
   return res
     .status(200)
     .json(new ApiResponse(200, trip, "Trip ended successfully"));
+});
+
+/**
+ * Add Field trip locations
+ * @route [
+ *  /api/v1/field-user/trip/:tripId/locations
+ * ]
+ * @method PUT
+ * @contentType application/json
+ * @authentication true
+ * @authorization false
+ *
+ */
+
+exports.addTripLocations = asyncHandler(async (req, res) => {
+  const { tripId } = req.params;
+  const { latitude, longitude } = req.body;
+
+  if (!latitude || !longitude) {
+    throw new ApiError(400, "Location not gained!");
+  }
+
+  const user = await User.findById(req?.user?._id);
+  if (!user) {
+    throw new ApiError(400, "Invalid user");
+  }
+
+  const trip = await Trip.findById(tripId);
+
+  if (!trip || trip.endTime) {
+    throw new ApiError(400, "Trip not available!");
+  }
+
+  trip.locations.push({ latitude, longitude, time: new Date() });
+  await trip.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, trip, "location added successfully"));
 });

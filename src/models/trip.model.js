@@ -19,6 +19,7 @@ const tripSchema = new mongoose.Schema(
         _id: false,
         latitude: { type: mongoose.Schema.Types.String },
         longitude: { type: mongoose.Schema.Types.String },
+        time: { type: mongoose.Schema.Types.Date, default: Date.now() },
       },
     ],
   },
