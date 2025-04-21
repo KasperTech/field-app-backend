@@ -14,8 +14,9 @@ const tripSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Date,
       default: null,
     },
-    markedLocations: [
+    locations: [
       {
+        _id: false,
         latitude: { type: mongoose.Schema.Types.String },
         longitude: { type: mongoose.Schema.Types.String },
       },
