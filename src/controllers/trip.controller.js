@@ -29,6 +29,11 @@ exports.startFieldTrip = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid user");
   }
 
+  const runningTrip = Trip.findOne({ userId: req.user._id, endTime: null });
+  if (runningTrip) {
+    throw new ApiError(400, "A Trip is already running");
+  }
+
   const trip = await new Trip({
     userId: req?.user?._id,
     startTime: new Date(),
@@ -152,6 +157,27 @@ exports.addTripLocations = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(new ApiResponse(200, trip, "location added successfully"));
+});
+
+/**
+ * fetch current running trip
+ * @route [
+ *  /api/v1/field-user/trip/current
+ * ]
+ * @method GET
+ * @contentType application/json
+ * @authentication true
+ * @authorization false
+ *
+ */
+exports.fetchRunningTrip = asyncHandler(async (req, res) => {
+  const trip = await Trip.findOne({ userId: req?.user?._id, endTime: null })
+    .select("-location")
+    .lean();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, trip, "Successfully fetched running trip"));
 });
 
 /**
