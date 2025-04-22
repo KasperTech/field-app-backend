@@ -1,7 +1,7 @@
 
-const prod = ["https://remarkable-griffin-2158bf.netlify.app"]
+const prod = ["https://field-app-client.netlify.app"]
 const dev = ["http://localhost:5173"]
-const staging=["https://remarkable-griffin-2158bf.netlify.app"]
+const staging=["https://field-app-client.netlify.app"]
 
 
 function allowedOrigins() {
