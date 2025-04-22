@@ -22,6 +22,7 @@ const tripSchema = new mongoose.Schema(
         time: { type: mongoose.Schema.Types.Date, default: Date.now() },
       },
     ],
+    totalDistance: { type: mongoose.Schema.Types.Number, default: 0 },
   },
   {
     timestamps: true,
