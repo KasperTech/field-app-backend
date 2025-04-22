@@ -29,7 +29,10 @@ exports.startFieldTrip = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Invalid user");
   }
 
-  const runningTrip = Trip.findOne({ userId: req.user._id, endTime: null });
+  const runningTrip = await Trip.findOne({
+    userId: req.user._id,
+    endTime: null,
+  });
   if (runningTrip) {
     throw new ApiError(400, "A Trip is already running");
   }
@@ -118,7 +121,7 @@ exports.endFieldTrip = asyncHandler(async (req, res) => {
 
 exports.addTripLocations = asyncHandler(async (req, res) => {
   const { tripId } = req.params;
-  const { latitude, longitude } = req.body;
+  const { latitude, longitude, time } = req.body;
 
   if (!latitude || !longitude) {
     throw new ApiError(400, "Location not gained!");
@@ -149,7 +152,7 @@ exports.addTripLocations = asyncHandler(async (req, res) => {
   trip.locations.push({
     latitude,
     longitude,
-    time: new Date(),
+    time: time ?? new Date(),
   });
   trip.totalDistance = parseFloat(newDist).toFixed(2);
   await trip.save();
@@ -162,7 +165,7 @@ exports.addTripLocations = asyncHandler(async (req, res) => {
 /**
  * fetch current running trip
  * @route [
- *  /api/v1/field-user/trip/current
+ *  /api/v1/field-user/trip/running
  * ]
  * @method GET
  * @contentType application/json
@@ -211,7 +214,8 @@ exports.getAllTrips = asyncHandler(async (req, res) => {
 
     const trips = await Trip.find(query)
       .skip((requestedPage - 1) * requestedLimit)
-      .limit(requestedLimit);
+      .limit(requestedLimit)
+      .sort({ createdAt: -1 });
 
     const totalCount = await Trip.countDocuments(query);
 
