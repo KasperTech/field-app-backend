@@ -242,3 +242,54 @@ exports.getAllTrips = asyncHandler(async (req, res) => {
       .json(new ApiResponse(200, trips, "Trips fetched successfully"));
   }
 });
+
+/**
+ * Fetch trip routes
+ * @route [
+ *  /api/v1/field-user/trip/:tripId/locations
+ * ]
+ * @method GET
+ * @contentType application/json
+ * @authentication true
+ * @authorization false
+ *
+ */
+exports.getAllRoutes = asyncHandler(async (req, res) => {
+  const { tripId } = req.params;
+  const { page, limit } = req.query;
+  const routes = await Trip.findById(tripId).select("-_id locations").lean();
+
+  const totalCount = routes?.locations?.length;
+
+  let requestedPage = Number(page);
+  let requestedLimit = Number(limit);
+
+  requestedPage =
+    _.isInteger(requestedPage) && requestedPage > 1 ? requestedPage : 1;
+  requestedLimit =
+    _.isInteger(requestedLimit) && (requestedLimit > 0 || requestedLimit <= 25)
+      ? requestedLimit
+      : 50;
+
+  const startIndex = (requestedPage - 1) * requestedLimit;
+  const endIndex = startIndex + requestedLimit;
+
+  const finalLocations = routes?.locations?.slice(startIndex, endIndex) || [];
+
+  const metaData = {
+    page: requestedPage,
+    limit: requestedLimit,
+    total_results: totalCount,
+    total_pages: Math.ceil(totalCount / requestedLimit),
+  };
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { data: finalLocations, metaData },
+        "Routes fetched successfully"
+      )
+    );
+});
