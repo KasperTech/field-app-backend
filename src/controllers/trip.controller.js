@@ -121,7 +121,7 @@ exports.endFieldTrip = asyncHandler(async (req, res) => {
 
 exports.addTripLocations = asyncHandler(async (req, res) => {
   const { tripId } = req.params;
-  const { latitude, longitude, time } = req.body;
+  const { latitude, longitude, time, totalDistance } = req.body;
 
   if (!latitude || !longitude) {
     throw new ApiError(400, "Location not gained!");
@@ -140,14 +140,14 @@ exports.addTripLocations = asyncHandler(async (req, res) => {
 
   const existingLocation = trip.locations[trip.locations.length - 1];
 
-  let newDist = getDistance(
-    existingLocation.latitude,
-    existingLocation.longitude,
-    latitude,
-    longitude
-  );
+  // let newDist = getDistance(
+  //   existingLocation.latitude,
+  //   existingLocation.longitude,
+  //   latitude,
+  //   longitude
+  // );
 
-  newDist = Number(newDist) + trip.totalDistance;
+  const newDist = Number(totalDistance) + Number(trip.totalDistance);
 
   trip.locations.push({
     latitude,
